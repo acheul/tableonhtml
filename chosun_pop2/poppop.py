@@ -157,3 +157,160 @@ def return_table_on_html(df, cp_list):
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+hat_txt_2 = """<!DOCTYPE html>
+<html> <!-- Demo version Completed HERE! OK.-->
+    <head>
+        <meta charset = "utf-8">
+        <style type = "text/css">
+            table{
+                border-collapse: collapse;
+                border: 2px solid black}
+            th{
+                border: 1px solid black}
+            td{
+                border: 1px solid black}
+            tr.red{
+              background-color: #9cc069;
+            }
+            div{
+                width: 100%}
+            div.left{
+                padding-left: 10px;
+                padding-right: 1000px;
+                float: left;}
+            div.right{
+                position: fixed;
+                overflow: scroll;
+                width: 150px;
+                height: 750px;
+                right: 50px;;
+                display: inline-block;
+                background-color: white;
+                padding: 5px;}
+            div.show-result{
+                font-size: larger;
+                color: white;
+                background-color: royalblue;}
+            hr.rge-separate{
+                border: solid 1px black;
+                width: 80%;}
+        </style>
+    </head>
+    <body>
+    <h1 style = "padding-left: 10px"> 안녕? v.2 </h1>
+    <div onclick = "pooling()">"""
+
+tail_txt_2 = '''<div class='right' name = "divright" onclick = "open_it()">
+        <div class = "show-result"> <strong>YES SAME</strong> </div>
+        <div id = "same_pool"></div><p>
+        <hr><p>
+        <div class = "show-result"> <strong>No, DIFF</strong> </div>
+        <div id = "diff_pool"></div><p>
+        <hr><p>
+        <hr><p><br/><p/>
+        <input type = "button" value = "open it" class = "click-button" onclick = "open_it()"> &nbsp; &nbsp; &nbsp;
+        <input type = "button" onclick = "download_it()" value = "download it" class = "click-button"> <p/>
+    </div>
+        <script = "text/javascript">
+
+            var all_idx_bySets = new Array();
+            var forms = document.getElementsByName("form");
+            for (var f = 0; f < forms.length; f++){
+                var form = forms[f]
+                var form_tbs = form.getElementsByTagName("table")
+                //
+                var idx_bySets = new Array();
+                for (var i = 0; i < form_tbs.length; i++){
+                    var elem = form_tbs[i];
+                    var idx_nb = elem.id.replace("table_idx", "");
+                    idx_bySets.push(idx_nb)}//
+                all_idx_bySets.push(idx_bySets)}//
+
+            function pooling(){
+                var same_pool = new Array();
+                var diff_pool = new Array();
+                for (var r = 0; r < all_idx_bySets.length; r++){
+                    var idx_byS = all_idx_bySets[r]
+                    // ** //
+                    var idx_byS_join = idx_byS.join('_')
+
+                    var elem_same = document.getElementById("same_id" + idx_byS_join)
+                    var elem_diff = document.getElementById("diff_id" + idx_byS_join)
+
+                    if (elem_same.checked == true){same_pool.push(idx_byS_join)};
+                    if (elem_diff.checked == true){diff_pool.push(idx_byS_join)}}
+
+                // show the result lists.
+                document.getElementById("same_pool").innerHTML = same_pool
+                document.getElementById("diff_pool").innerHTML = diff_pool
+                //
+                }
+
+    </script>
+    </body>
+</html>'''
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+def return_table_on_html_2(df, cp_list):
+
+    kt_abs = []
+
+    for cii, cp in enumerate(cp_list):
+        if cii%10 == 5:
+            time.sleep(0.5)
+
+        kt_list = []
+        for a in cp:
+            a_hh = hh_uni_idx[a]
+            a_hh_offset = a_hh.index(a)
+
+            tt_a = df[df.index.isin(a_hh)].copy().reset_index().drop(['index'], axis=1)
+            tt_a = pd.concat([pd.DataFrame({"index": a_hh}), tt_a], axis=1)
+            tt_a_html = tt_a.to_html(index=False)
+
+            time.sleep(0.5)
+
+            spt_a = tt_a_html.split("<tr>")
+            k = "<tr>".join(spt_a[:a_hh_offset+1])
+            t = "<tr>".join(spt_a[a_hh_offset+1:])
+            kt_a = k + "<tr class='red'>" + t
+            kt_a = kt_a.replace("\n", "")
+            kt_a = kt_a.replace('<table border="1" class="dataframe">', '<table border="1" class="dataframe" id="table_idx{}" name="table1"'.format(a))
+            kt_list.append(kt_a)
+
+        kt_ab_str = ", ".join([str(e) for e in cp])
+        kt_ab_str = "<p>(" + kt_ab_str + "),</p>"
+
+        kt_ab_tbl = "\n <br/> \n".join(kt_list)
+        kt_ab_tbl = '\n<form name = "form">\n' + kt_ab_tbl + '\n</form>\n'
+
+        kt_ab = kt_ab_str + kt_ab_tbl
+
+        # kt_ab = "<p>(" + str(a) + ", " + str(b) + "),</p>" + '\n<form name = "form">\n' + kt_a + "\n <br/> \n" + kt_b + '\n</form>\n'
+
+        time.sleep(0.5)
+
+        txt = "_".join([str(e) for e in cp])
+        input_TXT = '<div> &nbsp; &nbsp; &nbsp; same? <input type = "checkbox" class = "same" id = "same_id' + txt + '" value = "same?"> </input> &nbsp; &nbsp; &nbsp; diff? <input type = "checkbox" class = "same" id = "diff_id' + txt + '" value = "diff?"> </input> </div>'
+
+        kt_ab = kt_ab + input_TXT + '\n<br/>\n<hr align = "left" class = "rge-separate">'
+        kt_ab = "<div class='left'>\n" + kt_ab + '</div>'
+
+        kt_abs.append(kt_ab)
+
+    time.sleep(0.5)
+
+    kt_abs = "\n\n".join(kt_abs)
+
+    kt_abs = hat_txt_2 + "\n\n" + kt_abs + "\n\n" + tail_txt_2
+
+    return kt_abs
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
